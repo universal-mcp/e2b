@@ -1,5 +1,7 @@
 from universal_mcp.applications import APIApplication
 from universal_mcp.integrations import Integration
+from typing import Annotated
+from e2b_code_interpreter import Sandbox
 
 class E2bApp(APIApplication):
     """
@@ -8,16 +10,54 @@ class E2bApp(APIApplication):
     def __init__(self, integration: Integration = None, **kwargs) -> None:
         super().__init__(name="e2b", integration=integration, **kwargs)
 
-    def run(self):
+    def __init__(self, integration: Integration | None = None) -> None:
+        super().__init__(name="e2b", integration=integration)
+
+    def _format_execution_output(self, logs) -> str:
+        """Helper function to format the E2B execution logs nicely."""
+        output_parts = []
+
+        if logs.stdout:
+            stdout_content = "".join(logs.stdout).strip()
+            if stdout_content:
+                output_parts.append(f"\n{stdout_content}")
+
+        if logs.stderr:
+            stderr_content = "".join(logs.stderr).strip()
+            if stderr_content:
+                output_parts.append(f"--- ERROR ---\n{stderr_content}")
+
+        if not output_parts:
+            return "Execution finished with no output (stdout/stderr)."
+        return "\n\n".join(output_parts)
+
+    def execute_python_code(
+        self, code: Annotated[str, "The Python code to execute."]
+    ) -> str:
         """
-        Example tool implementation.
+        Executes Python code in a sandbox environment and returns the formatted output
+
+        Args:
+            code: String containing the Python code to be executed in the sandbox
+
+        Returns:
+            A string containing the formatted execution output/logs from running the code
+
+        Raises:
+            SandboxError: When there are issues with sandbox initialization or code execution
+            AuthenticationError: When API key authentication fails during sandbox setup
+            ValueError: When provided code string is empty or invalid
+
+        Tags:
+            execute, sandbox, code-execution, security, important
         """
-        print(f"Running the main task for {self.name}...")
-        print("Hello from E2bApp!")
-        return "Task completed successfully."
+        api_key = self.integration.get_credentials().get("api_key")
+        with Sandbox(api_key=api_key) as sandbox:
+            execution = sandbox.run_code(code=code)
+            result = self._format_execution_output(execution.logs)
+            return result
 
     def list_tools(self):
-        """
-        Lists the available tools (methods) for this application.
-        """
-        return [self.run]
+        return [
+            self.execute_python_code,
+        ]
