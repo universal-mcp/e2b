@@ -10,9 +10,6 @@ class E2bApp(APIApplication):
     def __init__(self, integration: Integration = None, **kwargs) -> None:
         super().__init__(name="e2b", integration=integration, **kwargs)
 
-    def __init__(self, integration: Integration | None = None) -> None:
-        super().__init__(name="e2b", integration=integration)
-
     def _format_execution_output(self, logs) -> str:
         """Helper function to format the E2B execution logs nicely."""
         output_parts = []
