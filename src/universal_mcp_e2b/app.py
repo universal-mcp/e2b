@@ -17,7 +17,7 @@ class E2bApp(APIApplication):
         if logs.stdout:
             stdout_content = "".join(logs.stdout).strip()
             if stdout_content:
-                output_parts.append(f"\n{stdout_content}")
+                output_parts.append(f"{stdout_content}")
 
         if logs.stderr:
             stderr_content = "".join(logs.stderr).strip()
