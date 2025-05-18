@@ -4,6 +4,7 @@ import pytest
 
 from universal_mcp_e2b.app import E2bApp
 
+
 @pytest.fixture
 def app_instance():
     """Provides a E2bApp instance for tests."""
